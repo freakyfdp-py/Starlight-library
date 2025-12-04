@@ -1,11 +1,9 @@
--- Starry Night UI Library 2025 (Enhanced)
 local module = {}
 
--- [[ THEME ]] -----------------------------------------------------------------
 local theme = {
-    background_color = Color3.fromRGB(10, 20, 60), -- Deep night blue
-    accent_color = Color3.fromRGB(85, 170, 255),  -- Starry blue
-    text_color = Color3.fromRGB(230, 230, 255),   -- White/Pale blue for text
+    background_color = Color3.fromRGB(10, 20, 60),
+    accent_color = Color3.fromRGB(85, 170, 255),
+    text_color = Color3.fromRGB(230, 230, 255),
     muted_text = Color3.fromRGB(150, 150, 200),
     menu_rounding = 8,
     hover_color = Color3.fromRGB(50, 80, 150),
@@ -13,9 +11,6 @@ local theme = {
     padding = 5
 }
 
--- [[ HELPERS ]] ---------------------------------------------------------------
-
--- Helper to create UI instances
 local function create(class, props)
     local obj = Instance.new(class)
     for k,v in pairs(props) do
@@ -24,13 +19,11 @@ local function create(class, props)
     return obj
 end
 
--- Function to apply button hover logic
 local function applyHover(btn, defaultColor, hoverColor)
     btn.MouseEnter:Connect(function() btn.BackgroundColor3 = hoverColor end)
     btn.MouseLeave:Connect(function() btn.BackgroundColor3 = defaultColor end)
 end
 
--- [[ SECTION OBJECT ]] --------------------------------------------------------
 local Section = {}
 Section.__index = Section
 
@@ -172,12 +165,9 @@ function Section:CreateColorPicker(text, defaultColor, callback)
     local colorBtn = create("TextButton",{Parent=frame,Size=UDim2.new(0,30,0,20),Position=UDim2.new(1,-35,0,20),BackgroundColor3=defaultColor,BorderSizePixel=0,Text="", AutoButtonColor=false})
     create("UICorner",{Parent=colorBtn,CornerRadius=UDim.new(0,theme.menu_rounding)})
     
-    -- Placeholder for actual color picker logic
     colorBtn.MouseButton1Click:Connect(function()
         local ColorInput = Instance.new("Color3Value")
         ColorInput.Value = colorBtn.BackgroundColor3
-        -- In a real environment, you'd open a color picker GUI here
-        -- For this example, we simulate a change
         local newColor = Color3.fromRGB(math.random(0,255), math.random(0,255), math.random(0,255))
         colorBtn.BackgroundColor3 = newColor
         if callback then callback(newColor) end
@@ -190,16 +180,14 @@ end
 function Section:CreateKeybind(text, defaultKey, callback)
     local bind = {
         Key = defaultKey or "None",
-        Mode = "Hold" -- Default mode: Hold
+        Mode = "Hold"
     }
     
     local isListening = false
     
-    -- Container Frame
     local container = create("Frame",{Parent=self.frame, Size=UDim2.new(1,-theme.padding*2,0,30), BackgroundTransparency=1})
-    local mainFrame = container.Parent.Parent.Parent -- Reference to the main window Frame
+    local mainFrame = container.Parent.Parent.Parent
 
-    -- Main Button (Displays Key and initiates binding)
     local keyBtn = create("TextButton",{
         Parent=container, Size=UDim2.new(1,0,1,0), TextXAlignment = Enum.TextXAlignment.Left,
         Text = text.." ["..bind.Key.."] ("..bind.Mode..")", Font=Enum.Font.Gotham,
@@ -215,11 +203,10 @@ function Section:CreateKeybind(text, defaultKey, callback)
         keyBtn.Text = text.." ["..bind.Key.."] ("..bind.Mode..")"
     end
 
-    -- === KEY BINDING LOGIC ===
     local function finishBinding(input)
         local keyName
         if input.UserInputType ~= Enum.UserInputType.Keyboard then
-            keyName = input.UserInputType.Name -- Captures MouseButton1, MouseButton2, etc.
+            keyName = input.UserInputType.Name
         else
             keyName = input.KeyCode.Name
         end
@@ -251,9 +238,8 @@ function Section:CreateKeybind(text, defaultKey, callback)
         end
     end)
 
-    -- === TOGGLE/HOLD CONTEXT MENU (RIGHT CLICK) ===
     local menu = create("Frame",{
-        Parent = mainFrame, -- Parent to the main window for proper positioning
+        Parent = mainFrame,
         Size = UDim2.new(0,100,0,60),
         BackgroundColor3 = theme.background_color,
         Visible = false,
@@ -281,21 +267,17 @@ function Section:CreateKeybind(text, defaultKey, callback)
     createMenuItem("Set to Hold", "Hold")
     
     keyBtn.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton2 then -- Right Click
-            -- Position the menu relative to the mouse location
+        if input.UserInputType == Enum.UserInputType.MouseButton2 then
             local mouseLoc = UserInputService:GetMouseLocation()
             menu.Position = UDim2.new(0, mouseLoc.X, 0, mouseLoc.Y)
             menu.Visible = true
-            input:Cancel() -- Consume the right-click event
+            input:Cancel()
         end
     end)
     
-    -- Close menu when clicking away (or right-clicking again)
     UserInputService.InputBegan:Connect(function(input)
         if menu.Visible and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2) then
-            -- Check if the click was outside the menu
             if not menu:IsA("GuiObject") or not menu:GetChildren()[1]:IsA("GuiObject") or not menu:GetChildren()[1]:GetAbsolutePosition().X then
-                -- Fallback check for safe closing
                 menu.Visible = false
                 return
             end
@@ -313,7 +295,6 @@ function Section:CreateKeybind(text, defaultKey, callback)
     
     updateSectionHeight(self, 30)
     
-    -- Return the bind state and updater for external logic
     return {
         Key = bind.Key,
         Mode = bind.Mode,
@@ -321,7 +302,6 @@ function Section:CreateKeybind(text, defaultKey, callback)
     }
 end
 
--- [[ TAB OBJECT ]] ------------------------------------------------------------
 local Tab = {}
 Tab.__index = Tab
 
@@ -355,7 +335,6 @@ function Tab:CreateSection(name)
     return section
 end
 
--- [[ WINDOW OBJECT ]] ---------------------------------------------------------
 local Window = {}
 Window.__index = Window
 
@@ -391,7 +370,6 @@ function Window:CreateTab(name)
     return tab
 end
 
--- Top bar icon for settings menu
 local function createSettingsMenu(parent)
     local settingsBtn = create("TextButton",{Parent=parent,Size=UDim2.new(0,30,0,30),Position=UDim2.new(0,theme.padding,0,theme.padding/2),Text="⚙",Font=Enum.Font.GothamBold,TextSize=18,TextColor3=theme.text_color,BackgroundColor3=theme.accent_color,BorderSizePixel=0, AutoButtonColor=false})
     create("UICorner",{Parent=settingsBtn,CornerRadius=UDim.new(0,theme.menu_rounding)})
@@ -405,7 +383,6 @@ local function createSettingsMenu(parent)
     return settingsBtn, menuFrame
 end
 
--- [[ LIBRARY INIT ]] ----------------------------------------------------------
 module.init=function(title)
     local sg=create("ScreenGui",{Parent=game.Players.LocalPlayer:WaitForChild("PlayerGui"),ResetOnSpawn=false,Name=title or "StarryNightUI"})
     local frame=create("Frame",{Parent=sg,Size=UDim2.new(0,500,0,400),Position=UDim2.new(0.5,-250,0.5,-200),BackgroundColor3=theme.background_color,BorderSizePixel=0, Active=true})
@@ -413,10 +390,8 @@ module.init=function(title)
     create("UICorner",{Parent=frame,CornerRadius=UDim.new(0,theme.menu_rounding)})
     create("UIStroke",{Parent=frame, Thickness=2, Color=theme.stroke_color, ApplyStrokeMode=Enum.ApplyStrokeMode.Border})
 
-    -- Top bar with title + icon (Used for dragging)
     local topBar=create("Frame",{Parent=frame,Size=UDim2.new(1,0,0,40),BackgroundTransparency=1, Active=true})
     
-    -- Dragging Logic
     local drag = false
     local lastInput = nil
     local dragStart = Vector2.new(0, 0)
