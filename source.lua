@@ -14,7 +14,6 @@ local theme = {
 local function create(class, props)
     local obj = Instance.new(class)
     for k,v in pairs(props) do
-        -- Use pcall to safely assign properties, preventing script failure if any other hidden, non-standard property is included
         local success, err = pcall(function()
             obj[k] = v
         end)
@@ -147,7 +146,7 @@ function Section:CreateTextBox(placeholder,callback)
     -- FIX: Use UIPadding instance for text padding inside the TextBox
     local textPadding = create("UIPadding", {
         Parent = box, 
-        PaddingLeft = UDim.new(0, 10) -- Adds 10 pixel padding to the left
+        PaddingLeft = UDim.new(0, 10) 
     })
     
     create("UICorner",{Parent=box,CornerRadius=UDim.new(0,theme.menu_rounding)})
@@ -354,28 +353,33 @@ module.init=function(title)
     create("UICorner",{Parent=frame,CornerRadius=UDim.new(0,theme.menu_rounding)})
     create("UIStroke",{Parent=frame, Thickness=2, Color=theme.stroke_color, ApplyStrokeMode=Enum.ApplyStrokeMode.Border})
     local topBar=create("Frame",{Parent=frame,Size=UDim2.new(1,0,0,40),BackgroundTransparency=1, Active=true})
+    
+    -- FIX: Implemented robust drag logic using GetMouseLocation() to prevent Vector3/Vector2 mismatch
     local drag = false
-    local lastInput = nil
-    local dragStart = Vector2.new(0, 0)
+    local dragStartOffset = Vector2.new(0, 0)
+
     topBar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             drag = true
-            lastInput = input
-            dragStart = input.Position - frame.AbsolutePosition
+            local mousePos = UserInputService:GetMouseLocation()
+            dragStartOffset = mousePos - frame.AbsolutePosition
         end
     end)
+
     UserInputService.InputChanged:Connect(function(input)
-        if input == lastInput and drag then
-            local newPos = input.Position - dragStart
+        if drag and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local mousePos = UserInputService:GetMouseLocation()
+            local newPos = mousePos - dragStartOffset
             frame.Position = UDim2.new(0, newPos.X, 0, newPos.Y)
         end
     end)
+
     topBar.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             drag = false
-            lastInput = nil
         end
     end)
+
     local titleLabel=create("TextLabel",{Parent=topBar,Size=UDim2.new(1,0,1,0),Text=title or "Starry Night UI",Font=Enum.Font.GothamBold,TextSize=18,TextColor3=theme.text_color,BackgroundTransparency=1})
     local settingsBtn, settingsMenu=createSettingsMenu(topBar)
     local tabBar=create("Frame",{Parent=frame,Size=UDim2.new(1,0,0,40),Position=UDim2.new(0,0,0,40),BackgroundTransparency=1})
