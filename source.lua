@@ -14,11 +14,10 @@ local theme = {
 local function create(class, props)
     local obj = Instance.new(class)
     for k,v in pairs(props) do
-        -- Wrap property assignment in a pcall to safely ignore invalid properties that sometimes slip in
+        -- Use pcall to safely assign properties, preventing script failure if any other hidden, non-standard property is included
         local success, err = pcall(function()
             obj[k] = v
         end)
-        -- If TextPadding was causing the issue, the pcall would catch it, but we removed it directly for reliability
     end
     return obj
 end
@@ -140,15 +139,15 @@ function Section:CreateTextBox(placeholder,callback)
         Size=UDim2.new(1,-theme.padding*2,0,30),
         Text="", PlaceholderText=placeholder, Font=Enum.Font.Gotham, TextSize=14,
         TextColor3=theme.text_color, BackgroundColor3=Color3.fromRGB(50,50,100), BorderSizePixel=0,
-        -- FIX: Removed invalid TextPadding property. TextXAlignment and TextYAlignment handle basic centering.
+        -- FIX: Removed invalid TextPadding property.
         TextXAlignment = Enum.TextXAlignment.Left, 
         TextYAlignment = Enum.TextYAlignment.Center 
     })
     
-    -- SIMULATION: Add UIPadding inside the textbox to simulate left-side padding for better aesthetics
+    -- FIX: Use UIPadding instance for text padding inside the TextBox
     local textPadding = create("UIPadding", {
         Parent = box, 
-        PaddingLeft = UDim.new(0, 10) 
+        PaddingLeft = UDim.new(0, 10) -- Adds 10 pixel padding to the left
     })
     
     create("UICorner",{Parent=box,CornerRadius=UDim.new(0,theme.menu_rounding)})
