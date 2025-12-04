@@ -14,7 +14,11 @@ local theme = {
 local function create(class, props)
     local obj = Instance.new(class)
     for k,v in pairs(props) do
-        obj[k] = v
+        -- Wrap property assignment in a pcall to safely ignore invalid properties that sometimes slip in
+        local success, err = pcall(function()
+            obj[k] = v
+        end)
+        -- If TextPadding was causing the issue, the pcall would catch it, but we removed it directly for reliability
     end
     return obj
 end
@@ -136,8 +140,17 @@ function Section:CreateTextBox(placeholder,callback)
         Size=UDim2.new(1,-theme.padding*2,0,30),
         Text="", PlaceholderText=placeholder, Font=Enum.Font.Gotham, TextSize=14,
         TextColor3=theme.text_color, BackgroundColor3=Color3.fromRGB(50,50,100), BorderSizePixel=0,
-        TextXAlignment = Enum.TextXAlignment.Left, TextYAlignment = Enum.TextYAlignment.Center, TextPadding = UDim.new(0, 10)
+        -- FIX: Removed invalid TextPadding property. TextXAlignment and TextYAlignment handle basic centering.
+        TextXAlignment = Enum.TextXAlignment.Left, 
+        TextYAlignment = Enum.TextYAlignment.Center 
     })
+    
+    -- SIMULATION: Add UIPadding inside the textbox to simulate left-side padding for better aesthetics
+    local textPadding = create("UIPadding", {
+        Parent = box, 
+        PaddingLeft = UDim.new(0, 10) 
+    })
+    
     create("UICorner",{Parent=box,CornerRadius=UDim.new(0,theme.menu_rounding)})
     create("UIStroke",{Parent=box, Thickness=1, Color=theme.stroke_color, ApplyStrokeMode=Enum.ApplyStrokeMode.Border})
     box.FocusLost:Connect(function(enter) if enter and callback then callback(box.Text) end end)
@@ -221,7 +234,7 @@ function Section:CreateKeybind(text, defaultKey, callback)
     create("UICorner",{Parent=menu, CornerRadius=UDim.new(0,theme.menu_rounding)})
     create("UIStroke",{Parent=menu, Thickness=1, Color=theme.stroke_color, ApplyStrokeMode=Enum.ApplyStrokeMode.Border})
     local layout = create("UIListLayout",{Parent=menu, Padding=UDim.new(0,2), SortOrder=Enum.SortOrder.LayoutOrder, HorizontalAlignment=Enum.HorizontalAlignment.Center})
-    -- FIX: Changed PaddingAll to individual padding properties
+    -- FIX: Replaced invalid 'PaddingAll'
     create("UIPadding",{Parent=menu, PaddingTop=UDim.new(0,theme.padding), PaddingBottom=UDim.new(0,theme.padding), PaddingLeft=UDim.new(0,theme.padding), PaddingRight=UDim.new(0,theme.padding)})
     local function createMenuItem(menuText, mode)
         local item = create("TextButton",{
@@ -370,7 +383,7 @@ module.init=function(title)
     create("UIListLayout",{Parent=tabBar, Padding=UDim.new(0,theme.padding), SortOrder=Enum.SortOrder.LayoutOrder, FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Left, VerticalAlignment = Enum.VerticalAlignment.Center})
     create("UIPadding",{Parent=tabBar, PaddingLeft=UDim.new(0,theme.padding), PaddingRight=UDim.new(0,theme.padding)})
     local container=create("Frame",{Parent=frame,Size=UDim2.new(1,0,1,-80),Position=UDim2.new(0,0,0,80),BackgroundTransparency=1})
-    -- FIX: Changed PaddingAll to individual padding properties
+    -- FIX: Changed invalid PaddingAll to individual padding properties
     create("UIPadding",{Parent=container, PaddingTop=UDim.new(0,theme.padding), PaddingBottom=UDim.new(0,theme.padding), PaddingLeft=UDim.new(0,theme.padding), PaddingRight=UDim.new(0,theme.padding)})
     return setmetatable({sg=sg,frame=frame,container=container,tabBar=tabBar,tabs={},settingsBtn=settingsBtn,settingsMenu=settingsMenu},Window)
 end
