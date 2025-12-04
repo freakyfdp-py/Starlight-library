@@ -44,13 +44,10 @@ function Section:CreateButton(text, callback)
         BorderSizePixel = 0,
         AutoButtonColor = false
     })
-    
     create("UICorner",{Parent=btn, CornerRadius=UDim.new(0, theme.menu_rounding)})
     create("UIStroke",{Parent=btn, Thickness=1, Color=theme.stroke_color, ApplyStrokeMode=Enum.ApplyStrokeMode.Border})
-    
     applyHover(btn, theme.accent_color, theme.hover_color)
     if callback then btn.MouseButton1Click:Connect(callback) end
-    
     updateSectionHeight(self, 30)
     return btn
 end
@@ -66,7 +63,6 @@ function Section:CreateLabel(text)
         BackgroundTransparency = 1,
         TextXAlignment = Enum.TextXAlignment.Left
     })
-    
     updateSectionHeight(self, 25)
     return lbl
 end
@@ -79,27 +75,22 @@ function Section:CreateToggle(text, callback)
         Text = "  " .. text, Font=Enum.Font.Gotham, TextSize=14, TextColor3=theme.text_color,
         BackgroundColor3=Color3.fromRGB(50,50,100), BorderSizePixel=0, AutoButtonColor = false
     })
-    
     create("UICorner",{Parent=btn,CornerRadius=UDim.new(0,theme.menu_rounding)})
     create("UIStroke",{Parent=btn, Thickness=1, Color=theme.stroke_color, ApplyStrokeMode=Enum.ApplyStrokeMode.Border})
-
     local indicator = create("Frame", {
         Parent = btn, Size = UDim2.new(0, 10, 0, 10), Position = UDim2.new(0, 10, 0.5, -5),
         BackgroundColor3 = Color3.fromRGB(200, 50, 50), BorderColor3 = theme.stroke_color, BorderSizePixel = 1
     })
     create("UICorner", {Parent=indicator, CornerRadius=UDim.new(0.5, 0)})
-    
     local function updateStateVisuals()
         indicator.BackgroundColor3 = state and theme.accent_color or Color3.fromRGB(200, 50, 50)
     end
     updateStateVisuals()
-    
     btn.MouseButton1Click:Connect(function()
         state = not state
         updateStateVisuals()
         if callback then callback(state) end
     end)
-
     applyHover(btn, Color3.fromRGB(50,50,100), theme.hover_color)
     updateSectionHeight(self, 30)
     return container
@@ -113,7 +104,6 @@ function Section:CreateSlider(text, min, max, default, callback)
     create("UICorner",{Parent=barBg,CornerRadius=UDim.new(0,theme.menu_rounding)})
     local barFill = create("Frame",{Parent=barBg,Size=UDim2.new((default-min)/(max-min),0,1,0),BackgroundColor3=theme.accent_color,BorderSizePixel=0})
     create("UICorner",{Parent=barFill,CornerRadius=UDim.new(0,theme.menu_rounding)})
-
     local dragging=false
     local function updateValue(rel)
         barFill.Size = UDim2.new(rel,0,1,0)
@@ -121,12 +111,10 @@ function Section:CreateSlider(text, min, max, default, callback)
         label.Text = text.." : "..value
         if callback then callback(value) end
     end
-    
     local function onInput(input)
         local rel = math.clamp((input.Position.X-barBg.AbsolutePosition.X)/barBg.AbsoluteSize.X,0,1)
         updateValue(rel)
     end
-
     barBg.InputBegan:Connect(function(input)
         if input.UserInputType==Enum.UserInputType.MouseButton1 then dragging=true; onInput(input) end
     end)
@@ -138,7 +126,6 @@ function Section:CreateSlider(text, min, max, default, callback)
             onInput(input)
         end
     end)
-    
     updateSectionHeight(self, 50)
     return container
 end
@@ -154,7 +141,6 @@ function Section:CreateTextBox(placeholder,callback)
     create("UICorner",{Parent=box,CornerRadius=UDim.new(0,theme.menu_rounding)})
     create("UIStroke",{Parent=box, Thickness=1, Color=theme.stroke_color, ApplyStrokeMode=Enum.ApplyStrokeMode.Border})
     box.FocusLost:Connect(function(enter) if enter and callback then callback(box.Text) end end)
-    
     updateSectionHeight(self, 30)
     return box
 end
@@ -164,7 +150,6 @@ function Section:CreateColorPicker(text, defaultColor, callback)
     local label = create("TextLabel",{Parent=frame,Size=UDim2.new(1,0,0,20),Text=text,Font=Enum.Font.Gotham,TextSize=14,TextColor3=theme.text_color,BackgroundTransparency=1,TextXAlignment=Enum.TextXAlignment.Left})
     local colorBtn = create("TextButton",{Parent=frame,Size=UDim2.new(0,30,0,20),Position=UDim2.new(1,-35,0,20),BackgroundColor3=defaultColor,BorderSizePixel=0,Text="", AutoButtonColor=false})
     create("UICorner",{Parent=colorBtn,CornerRadius=UDim.new(0,theme.menu_rounding)})
-    
     colorBtn.MouseButton1Click:Connect(function()
         local ColorInput = Instance.new("Color3Value")
         ColorInput.Value = colorBtn.BackgroundColor3
@@ -172,7 +157,6 @@ function Section:CreateColorPicker(text, defaultColor, callback)
         colorBtn.BackgroundColor3 = newColor
         if callback then callback(newColor) end
     end)
-    
     updateSectionHeight(self, 40)
     return frame
 end
@@ -182,27 +166,21 @@ function Section:CreateKeybind(text, defaultKey, callback)
         Key = defaultKey or "None",
         Mode = "Hold"
     }
-    
     local isListening = false
-    
     local container = create("Frame",{Parent=self.frame, Size=UDim2.new(1,-theme.padding*2,0,30), BackgroundTransparency=1})
     local mainFrame = container.Parent.Parent.Parent
-
     local keyBtn = create("TextButton",{
         Parent=container, Size=UDim2.new(1,0,1,0), TextXAlignment = Enum.TextXAlignment.Left,
         Text = text.." ["..bind.Key.."] ("..bind.Mode..")", Font=Enum.Font.Gotham,
         TextSize=14, TextColor3=theme.text_color, BackgroundColor3=Color3.fromRGB(50,50,100),
         BorderSizePixel=0, AutoButtonColor = false
     })
-    
     create("UICorner",{Parent=keyBtn,CornerRadius=UDim.new(0,theme.menu_rounding)})
     create("UIStroke",{Parent=keyBtn, Thickness=1, Color=theme.stroke_color, ApplyStrokeMode=Enum.ApplyStrokeMode.Border})
     applyHover(keyBtn, Color3.fromRGB(50,50,100), theme.hover_color)
-
     local function updateText()
         keyBtn.Text = text.." ["..bind.Key.."] ("..bind.Mode..")"
     end
-
     local function finishBinding(input)
         local keyName
         if input.UserInputType ~= Enum.UserInputType.Keyboard then
@@ -210,7 +188,6 @@ function Section:CreateKeybind(text, defaultKey, callback)
         else
             keyName = input.KeyCode.Name
         end
-
         if keyName == "Escape" or keyName == "Return" then
             bind.Key = "None"
         elseif keyName == "Unknown" then
@@ -218,12 +195,10 @@ function Section:CreateKeybind(text, defaultKey, callback)
         else
             bind.Key = keyName
         end
-
         keyBtn.BackgroundColor3 = Color3.fromRGB(50,50,100)
         isListening = false
         updateText()
     end
-    
     keyBtn.MouseButton1Click:Connect(function()
         if not isListening then
             isListening = true
@@ -231,13 +206,11 @@ function Section:CreateKeybind(text, defaultKey, callback)
             keyBtn.BackgroundColor3 = theme.accent_color
         end
     end)
-    
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if isListening and not gameProcessed then
             finishBinding(input)
         end
     end)
-
     local menu = create("Frame",{
         Parent = mainFrame,
         Size = UDim2.new(0,100,0,60),
@@ -249,7 +222,6 @@ function Section:CreateKeybind(text, defaultKey, callback)
     create("UIStroke",{Parent=menu, Thickness=1, Color=theme.stroke_color, ApplyStrokeMode=Enum.ApplyStrokeMode.Border})
     local layout = create("UIListLayout",{Parent=menu, Padding=UDim.new(0,2), SortOrder=Enum.SortOrder.LayoutOrder, HorizontalAlignment=Enum.HorizontalAlignment.Center})
     create("UIPadding",{Parent=menu, PaddingAll=UDim.new(0,5)})
-    
     local function createMenuItem(menuText, mode)
         local item = create("TextButton",{
             Parent=menu, Size=UDim2.new(1,0,0,20), Text=menuText, TextSize=12,
@@ -262,10 +234,8 @@ function Section:CreateKeybind(text, defaultKey, callback)
             menu.Visible = false
         end)
     end
-    
     createMenuItem("Set to Toggle", "Toggle")
     createMenuItem("Set to Hold", "Hold")
-    
     keyBtn.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton2 then
             local mouseLoc = UserInputService:GetMouseLocation()
@@ -274,27 +244,22 @@ function Section:CreateKeybind(text, defaultKey, callback)
             input:Cancel()
         end
     end)
-    
     UserInputService.InputBegan:Connect(function(input)
         if menu.Visible and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2) then
             if not menu:IsA("GuiObject") or not menu:GetChildren()[1]:IsA("GuiObject") or not menu:GetChildren()[1]:GetAbsolutePosition().X then
                 menu.Visible = false
                 return
             end
-
             local mouseLoc = UserInputService:GetMouseLocation()
             local menuAbs = menu.AbsolutePosition
             local menuSize = menu.AbsoluteSize
-            
             if mouseLoc.X < menuAbs.X or mouseLoc.X > menuAbs.X + menuSize.X or
                mouseLoc.Y < menuAbs.Y or mouseLoc.Y > menuAbs.Y + menuSize.Y then
                 menu.Visible = false
             end
         end
     end)
-    
     updateSectionHeight(self, 30)
-    
     return {
         Key = bind.Key,
         Mode = bind.Mode,
@@ -309,27 +274,22 @@ function Tab:CreateSection(name)
     local section = setmetatable({},Section)
     section.name=name
     section.frame=create("Frame",{Parent=self.frame,Size=UDim2.new(1,0,0,10),BackgroundColor3=theme.background_color,BorderSizePixel=0})
-    
     create("TextLabel",{
         Parent=section.frame, Size=UDim2.new(1,0,0,20), Text=name,
         Font=Enum.Font.GothamBold, TextSize=16, TextColor3=theme.accent_color,
         BackgroundTransparency=1, TextXAlignment = Enum.TextXAlignment.Left,
         Position = UDim2.new(0, theme.padding, 0, 0)
     })
-    
     create("UICorner",{Parent=section.frame,CornerRadius=UDim.new(0,theme.menu_rounding)})
     create("UIStroke",{Parent=section.frame, Thickness=1, Color=theme.stroke_color, ApplyStrokeMode=Enum.ApplyStrokeMode.Border})
-    
     section.layout=create("UIListLayout",{
         Parent=section.frame, Padding=UDim.new(0, theme.padding), SortOrder=Enum.SortOrder.LayoutOrder,
         HorizontalAlignment = Enum.HorizontalAlignment.Center, FillDirection = Enum.FillDirection.Vertical
     })
-    
     section.padding=create("UIPadding",{
         Parent=section.frame, PaddingTop=UDim.new(0,25), PaddingLeft=UDim.new(0,theme.padding),
         PaddingRight=UDim.new(0,theme.padding), PaddingBottom=UDim.new(0,theme.padding)
     })
-    
     section.frame.Size = UDim2.new(1, 0, 0, 25 + theme.padding)
     table.insert(self.sections,section)
     return section
@@ -342,30 +302,24 @@ function Window:CreateTab(name)
     local tab=setmetatable({},Tab)
     tab.name=name
     tab.sections={}
-    
     tab.frame=create("Frame",{
         Parent=self.container, Size=UDim2.new(1,0,1,0), BackgroundTransparency=1, Visible=false
     })
-    
     create("UIListLayout", {
         Parent = tab.frame, Padding = UDim.new(0, theme.padding), SortOrder = Enum.SortOrder.LayoutOrder,
         HorizontalAlignment = Enum.HorizontalAlignment.Center, FillDirection = Enum.FillDirection.Vertical
     })
-    
     local tabBtn=create("TextButton",{
         Parent=self.tabBar, Size=UDim2.new(0,100,1,0), Text=name, Font=Enum.Font.GothamBold,
         TextSize=14, TextColor3=theme.text_color, BackgroundColor3=theme.accent_color,
         BorderSizePixel=0, AutoButtonColor = false
     })
-    
     create("UICorner",{Parent=tabBtn,CornerRadius=UDim.new(0,theme.menu_rounding)})
     applyHover(tabBtn, theme.accent_color, theme.hover_color)
-
     tabBtn.MouseButton1Click:Connect(function()
         for _,t in pairs(self.tabs) do t.frame.Visible=false end
         tab.frame.Visible=true
     end)
-
     table.insert(self.tabs,tab)
     return tab
 end
@@ -374,11 +328,9 @@ local function createSettingsMenu(parent)
     local settingsBtn = create("TextButton",{Parent=parent,Size=UDim2.new(0,30,0,30),Position=UDim2.new(0,theme.padding,0,theme.padding/2),Text="⚙",Font=Enum.Font.GothamBold,TextSize=18,TextColor3=theme.text_color,BackgroundColor3=theme.accent_color,BorderSizePixel=0, AutoButtonColor=false})
     create("UICorner",{Parent=settingsBtn,CornerRadius=UDim.new(0,theme.menu_rounding)})
     applyHover(settingsBtn, theme.accent_color, theme.hover_color)
-    
     local menuFrame = create("Frame",{Parent=parent,Size=UDim2.new(0,200,0,200),Position=UDim2.new(0,theme.padding,0,40),BackgroundColor3=theme.background_color,Visible=false})
     create("UICorner",{Parent=menuFrame,CornerRadius=UDim.new(0,theme.menu_rounding)})
     create("UIStroke",{Parent=menuFrame, Thickness=1, Color=theme.stroke_color, ApplyStrokeMode=Enum.ApplyStrokeMode.Border})
-    
     settingsBtn.MouseButton1Click:Connect(function() menuFrame.Visible=not menuFrame.Visible end)
     return settingsBtn, menuFrame
 end
@@ -386,16 +338,12 @@ end
 module.init=function(title)
     local sg=create("ScreenGui",{Parent=game.Players.LocalPlayer:WaitForChild("PlayerGui"),ResetOnSpawn=false,Name=title or "StarryNightUI"})
     local frame=create("Frame",{Parent=sg,Size=UDim2.new(0,500,0,400),Position=UDim2.new(0.5,-250,0.5,-200),BackgroundColor3=theme.background_color,BorderSizePixel=0, Active=true})
-    
     create("UICorner",{Parent=frame,CornerRadius=UDim.new(0,theme.menu_rounding)})
     create("UIStroke",{Parent=frame, Thickness=2, Color=theme.stroke_color, ApplyStrokeMode=Enum.ApplyStrokeMode.Border})
-
     local topBar=create("Frame",{Parent=frame,Size=UDim2.new(1,0,0,40),BackgroundTransparency=1, Active=true})
-    
     local drag = false
     local lastInput = nil
     local dragStart = Vector2.new(0, 0)
-    
     topBar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             drag = true
@@ -415,19 +363,13 @@ module.init=function(title)
             lastInput = nil
         end
     end)
-
-
     local titleLabel=create("TextLabel",{Parent=topBar,Size=UDim2.new(1,0,1,0),Text=title or "Starry Night UI",Font=Enum.Font.GothamBold,TextSize=18,TextColor3=theme.text_color,BackgroundTransparency=1})
     local settingsBtn, settingsMenu=createSettingsMenu(topBar)
-
     local tabBar=create("Frame",{Parent=frame,Size=UDim2.new(1,0,0,40),Position=UDim2.new(0,0,0,40),BackgroundTransparency=1})
-    
     create("UIListLayout",{Parent=tabBar, Padding=UDim.new(0,theme.padding), SortOrder=Enum.SortOrder.LayoutOrder, FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Left, VerticalAlignment = Enum.VerticalAlignment.Center})
     create("UIPadding",{Parent=tabBar, PaddingLeft=UDim.new(0,theme.padding), PaddingRight=UDim.new(0,theme.padding)})
-    
     local container=create("Frame",{Parent=frame,Size=UDim2.new(1,0,1,-80),Position=UDim2.new(0,0,0,80),BackgroundTransparency=1})
     create("UIPadding",{Parent=container, PaddingAll=UDim.new(0,theme.padding)})
-    
     return setmetatable({sg=sg,frame=frame,container=container,tabBar=tabBar,tabs={},settingsBtn=settingsBtn,settingsMenu=settingsMenu},Window)
 end
 
