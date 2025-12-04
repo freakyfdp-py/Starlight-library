@@ -221,7 +221,8 @@ function Section:CreateKeybind(text, defaultKey, callback)
     create("UICorner",{Parent=menu, CornerRadius=UDim.new(0,theme.menu_rounding)})
     create("UIStroke",{Parent=menu, Thickness=1, Color=theme.stroke_color, ApplyStrokeMode=Enum.ApplyStrokeMode.Border})
     local layout = create("UIListLayout",{Parent=menu, Padding=UDim.new(0,2), SortOrder=Enum.SortOrder.LayoutOrder, HorizontalAlignment=Enum.HorizontalAlignment.Center})
-    create("UIPadding",{Parent=menu, PaddingAll=UDim.new(0,5)})
+    -- FIX: Changed PaddingAll to individual padding properties
+    create("UIPadding",{Parent=menu, PaddingTop=UDim.new(0,theme.padding), PaddingBottom=UDim.new(0,theme.padding), PaddingLeft=UDim.new(0,theme.padding), PaddingRight=UDim.new(0,theme.padding)})
     local function createMenuItem(menuText, mode)
         local item = create("TextButton",{
             Parent=menu, Size=UDim2.new(1,0,0,20), Text=menuText, TextSize=12,
@@ -369,7 +370,8 @@ module.init=function(title)
     create("UIListLayout",{Parent=tabBar, Padding=UDim.new(0,theme.padding), SortOrder=Enum.SortOrder.LayoutOrder, FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Left, VerticalAlignment = Enum.VerticalAlignment.Center})
     create("UIPadding",{Parent=tabBar, PaddingLeft=UDim.new(0,theme.padding), PaddingRight=UDim.new(0,theme.padding)})
     local container=create("Frame",{Parent=frame,Size=UDim2.new(1,0,1,-80),Position=UDim2.new(0,0,0,80),BackgroundTransparency=1})
-    create("UIPadding",{Parent=container, PaddingAll=UDim.new(0,theme.padding)})
+    -- FIX: Changed PaddingAll to individual padding properties
+    create("UIPadding",{Parent=container, PaddingTop=UDim.new(0,theme.padding), PaddingBottom=UDim.new(0,theme.padding), PaddingLeft=UDim.new(0,theme.padding), PaddingRight=UDim.new(0,theme.padding)})
     return setmetatable({sg=sg,frame=frame,container=container,tabBar=tabBar,tabs={},settingsBtn=settingsBtn,settingsMenu=settingsMenu},Window)
 end
 
