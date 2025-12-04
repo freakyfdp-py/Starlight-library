@@ -17,58 +17,6 @@ local function create(class, props)
     return obj
 end
 
--- WINDOW OBJECT
-local Window = {}
-Window.__index = Window
-
-function Window:CreateTab(name)
-    local tab = {}
-    setmetatable(tab, Tab)
-    tab.name = name
-
-    -- Create tab frame inside the window container
-    tab.frame = create("Frame", {
-        Parent = self.container,
-        Size = UDim2.new(1,0,1,0),
-        BackgroundTransparency = 1,
-        Visible = false
-    })
-
-    -- Layout inside tab
-    tab.layout = create("UIListLayout", {Parent = tab.frame, Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder})
-    tab.padding = create("UIPadding", {Parent = tab.frame, PaddingTop = UDim.new(0,10), PaddingLeft = UDim.new(0,10)})
-
-    table.insert(self.tabs, tab)
-    return tab
-end
-
--- TAB OBJECT
-local Tab = {}
-Tab.__index = Tab
-
-function Tab:CreateSection(name)
-    local section = {}
-    setmetatable(section, Section)
-    section.name = name
-
-    -- Section frame
-    section.frame = create("Frame", {
-        Parent = self.frame,
-        Size = UDim2.new(1,0,0,100),
-        BackgroundColor3 = theme.background_color,
-        BorderSizePixel = 0
-    })
-
-    create("UICorner", {Parent = section.frame, CornerRadius = UDim.new(0, theme.menuRounding)})
-
-    -- Layout inside section
-    section.layout = create("UIListLayout", {Parent = section.frame, Padding = UDim.new(0,5), SortOrder = Enum.SortOrder.LayoutOrder})
-    section.padding = create("UIPadding", {Parent = section.frame, PaddingTop = UDim.new(0,5), PaddingLeft = UDim.new(0,5)})
-
-    table.insert(self.sections or {}, section)
-    return section
-end
-
 -- SECTION OBJECT
 local Section = {}
 Section.__index = Section
@@ -106,6 +54,70 @@ function Section:CreateLabel(text)
     return lbl
 end
 
+-- TAB OBJECT
+local Tab = {}
+Tab.__index = Tab
+
+function Tab:CreateSection(name)
+    local section = setmetatable({}, Section)
+    section.name = name
+
+    section.frame = create("Frame", {
+        Parent = self.frame,
+        Size = UDim2.new(1,0,0,100),
+        BackgroundColor3 = theme.background_color,
+        BorderSizePixel = 0
+    })
+    create("UICorner", {Parent = section.frame, CornerRadius = UDim.new(0, theme.menuRounding)})
+
+    section.layout = create("UIListLayout", {Parent = section.frame, Padding = UDim.new(0,5), SortOrder = Enum.SortOrder.LayoutOrder})
+    section.padding = create("UIPadding", {Parent = section.frame, PaddingTop = UDim.new(0,5), PaddingLeft = UDim.new(0,5)})
+
+    table.insert(self.sections, section)
+    return section
+end
+
+-- WINDOW OBJECT
+local Window = {}
+Window.__index = Window
+
+function Window:CreateTab(name)
+    local tab = setmetatable({}, Tab)
+    tab.name = name
+    tab.sections = {}
+
+    -- Create tab frame
+    tab.frame = create("Frame", {
+        Parent = self.container,
+        Size = UDim2.new(1,0,1,0),
+        BackgroundTransparency = 1,
+        Visible = false
+    })
+
+    -- Create tab button
+    local tabBtn = create("TextButton", {
+        Parent = self.tabBar,
+        Size = UDim2.new(0, 100, 1, 0),
+        Text = name,
+        Font = Enum.Font.GothamBold,
+        TextSize = 14,
+        TextColor3 = theme.text_color,
+        BackgroundColor3 = theme.accent_color,
+        BorderSizePixel = 0
+    })
+    create("UICorner", {Parent = tabBtn, CornerRadius = UDim.new(0, theme.menuRounding)})
+
+    tabBtn.MouseButton1Click:Connect(function()
+        for _, t in pairs(self.tabs) do
+            t.frame.Visible = false
+        end
+        tab.frame.Visible = true
+    end)
+
+    table.insert(self.tabs, tab)
+    return tab
+end
+
 -- LIBRARY INIT
 module.init = function(title)
     local sg = create("ScreenGui", {Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui"), ResetOnSpawn = false, Name = title or "CustomUILibrary"})
@@ -120,24 +132,33 @@ module.init = function(title)
     })
     create("UICorner", {Parent = frame, CornerRadius = UDim.new(0, theme.menuRounding)})
 
-    -- Layout for tabs
-    local container = create("Frame", {
+    -- Tab bar at the top
+    local tabBar = create("Frame", {
         Parent = frame,
-        Size = UDim2.new(1,0,1,0),
+        Size = UDim2.new(1,0,0,40),
+        Position = UDim2.new(0,0,0,0),
+        BackgroundTransparency = 1
+    })
+
+    local windowContainer = create("Frame", {
+        Parent = frame,
+        Size = UDim2.new(1,0,1,-40),
+        Position = UDim2.new(0,0,0,40),
         BackgroundTransparency = 1
     })
 
     local win = setmetatable({
         sg = sg,
         frame = frame,
-        container = container,
+        container = windowContainer,
+        tabBar = tabBar,
         tabs = {}
     }, Window)
 
     return win
 end
 
--- Expose theme
+-- Theme setter
 module.set_theme = function(newTheme)
     for k,v in pairs(newTheme) do
         theme[k] = v
